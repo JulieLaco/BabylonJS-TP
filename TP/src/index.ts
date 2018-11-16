@@ -39,7 +39,7 @@ module BABYLON {
         public createSheep() {
             let assetsManager = new BABYLON.AssetsManager(this.scene);
             let meshTask = assetsManager.addMeshTask("sheep", "", "./assets/", "mouton-bab.babylon");
-            meshTask.onSuccess = function (task) {
+            meshTask.onSuccess = (task) => {
                 const sheep = task.loadedMeshes[0];
                 sheep.position = new Vector3(0, 5, 0);
 
@@ -47,13 +47,20 @@ module BABYLON {
                 sheep.material = material;
                 material.diffuseColor = new Color3(1, 0, 0);
                 material.emissiveColor = new Color3(1, 0, 0);
-                
+
+                this.engine.runRenderLoop(() => {
+                    this.sheepMove(sheep);
+                })             
             }
             meshTask.onError = function (task, message, exception) {
                 console.log(message, exception);
             }
 
             assetsManager.load();  
+        }
+
+        sheepMove(sheep: AbstractMesh): void {
+            sheep.position.x += 0.1;
         }
 
         createSkybox() {

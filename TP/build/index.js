@@ -20,20 +20,27 @@ var BABYLON;
             this.createSkybox();
         }
         Main.prototype.createSheep = function () {
+            var _this = this;
             var assetsManager = new BABYLON.AssetsManager(this.scene);
             var meshTask = assetsManager.addMeshTask("sheep", "", "./assets/", "mouton-bab.babylon");
             meshTask.onSuccess = function (task) {
                 var sheep = task.loadedMeshes[0];
                 sheep.position = new BABYLON.Vector3(0, 5, 0);
-                var material = new BABYLON.StandardMaterial('sheepColor', this.scene);
+                var material = new BABYLON.StandardMaterial('sheepColor', _this.scene);
                 sheep.material = material;
                 material.diffuseColor = new BABYLON.Color3(1, 0, 0);
                 material.emissiveColor = new BABYLON.Color3(1, 0, 0);
+                _this.engine.runRenderLoop(function () {
+                    _this.sheepMove(sheep);
+                });
             };
             meshTask.onError = function (task, message, exception) {
                 console.log(message, exception);
             };
             assetsManager.load();
+        };
+        Main.prototype.sheepMove = function (sheep) {
+            sheep.position.x += 0.1;
         };
         Main.prototype.createSkybox = function () {
             this._skybox = BABYLON.Mesh.CreateBox('skybox', 1000, this.scene, false, BABYLON.Mesh.BACKSIDE);
