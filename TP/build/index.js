@@ -16,12 +16,13 @@ var BABYLON;
             this.ground.physicsImpostor = new BABYLON.PhysicsImpostor(this.ground, BABYLON.PhysicsImpostor.BoxImpostor, {
                 mass: 0
             });
+            this.createSheep();
             // Create cubes
-            var height = 15;
-            var width = 10;
-            var size = 5;
-            var diffuse = new BABYLON.Texture('./assets/diffuse.png', this.scene);
-            var normal = new BABYLON.Texture('./assets/normal.png', this.scene);
+            // const height = 15;
+            // const width = 10;
+            // const size = 5;
+            // const diffuse = new Texture('./assets/diffuse.png', this.scene);
+            // const normal = new Texture('./assets/normal.png', this.scene);
             // for (let i = 0; i < height; i++) {
             //     let offsetX = -(width / 2) * 5;
             //     for (let j = 0; j < width; j++) {
@@ -38,6 +39,26 @@ var BABYLON;
             //     }
             // }
         }
+        Main.prototype.createSheep = function () {
+            var cube = BABYLON.Mesh.CreateBox('cube', 5, this.scene);
+            cube.position.x = 5;
+            cube.position.y = 5;
+            //BABYLON.SceneLoader.ImportMesh('sheep', './assets/', 'mouton3.babylon', this.scene);
+            var assetsManager = new BABYLON.AssetsManager(this.scene);
+            var meshTask = assetsManager.addMeshTask("sheep", "", "./assets/", "mouton-bab.babylon");
+            meshTask.onSuccess = function (task) {
+                var mouton = task.loadedMeshes[0];
+                mouton.position = new BABYLON.Vector3(5, 5, 5);
+                var material = new BABYLON.StandardMaterial('sheepColor', this.scene);
+                mouton.material = material;
+                material.diffuseColor = new BABYLON.Color3(1, 0, 0);
+                material.emissiveColor = new BABYLON.Color3(1, 0, 0);
+            };
+            meshTask.onError = function (task, message, exception) {
+                console.log(message, exception);
+            };
+            assetsManager.load();
+        };
         /**
          * Setup action for the given cube
          */

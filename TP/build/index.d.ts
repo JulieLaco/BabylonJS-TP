@@ -10,6 +10,7 @@ declare module BABYLON {
          * Constructor
          */
         constructor();
+        createSheep(): void;
         /**
          * Setup action for the given cube
          */
