@@ -6,15 +6,13 @@ declare module BABYLON {
         camera: FreeCamera;
         light: PointLight;
         ground: GroundMesh;
+        private _skybox;
         /**
          * Constructor
          */
         constructor();
         createSheep(): void;
-        /**
-         * Setup action for the given cube
-         */
-        setupActions(cube: Mesh): void;
+        createSkybox(): void;
         /**
          * Setup physics for the given cube
          */
