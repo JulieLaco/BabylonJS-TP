@@ -5,18 +5,27 @@ var BABYLON;
          * Constructor
          */
         function Main() {
+            var _this = this;
+            this.maxSheep = 5;
+            this.sheeps = 0;
             this.engine = new BABYLON.Engine(document.getElementById('renderCanvas'));
             this.scene = new BABYLON.Scene(this.engine);
             this.scene.enablePhysics(new BABYLON.Vector3(0, -50.81, 0), new BABYLON.CannonJSPlugin());
-            this.camera = new BABYLON.FreeCamera('camera', new BABYLON.Vector3(50, 10, 0), this.scene);
+            this.camera = new BABYLON.ArcRotateCamera('rotate', 0, 1.5, 1, new BABYLON.Vector3(200, 10, 0), this.scene);
+            this.camera.inputs.clear();
+            this.camera.inputs.add(new BABYLON.ArcRotateCameraPointersInput());
             this.camera.attachControl(this.engine.getRenderingCanvas());
-            this.camera.setTarget(new BABYLON.Vector3(0, 15, 0));
             this.light = new BABYLON.PointLight('light', new BABYLON.Vector3(15, 15, 15), this.scene);
             this.ground = BABYLON.Mesh.CreateGround('ground', 1000, 100, 32, this.scene);
             this.ground.physicsImpostor = new BABYLON.PhysicsImpostor(this.ground, BABYLON.PhysicsImpostor.BoxImpostor, {
-                mass: 0
+                mass: 0,
             });
-            this.createSheep();
+            this.engine.runRenderLoop(function () {
+                while (_this.sheeps < _this.maxSheep) {
+                    _this.createSheep();
+                    _this.sheeps++;
+                }
+            });
             this.createSkybox();
         }
         Main.prototype.createSheep = function () {
@@ -25,7 +34,7 @@ var BABYLON;
             var meshTask = assetsManager.addMeshTask("sheep", "", "./assets/", "mouton-bab.babylon");
             meshTask.onSuccess = function (task) {
                 var sheep = task.loadedMeshes[0];
-                sheep.position = new BABYLON.Vector3(0, 5, 0);
+                sheep.position = new BABYLON.Vector3(0, 3, 0);
                 var material = new BABYLON.StandardMaterial('sheepColor', _this.scene);
                 sheep.material = material;
                 material.diffuseColor = new BABYLON.Color3(1, 0, 0);
@@ -49,13 +58,13 @@ var BABYLON;
             }));
         };
         Main.prototype.createSkybox = function () {
-            this._skybox = BABYLON.Mesh.CreateBox('skybox', 1000, this.scene, false, BABYLON.Mesh.BACKSIDE);
+            this.skybox = BABYLON.Mesh.CreateBox('skybox', 1000, this.scene, false, BABYLON.Mesh.BACKSIDE);
             var skyboxMaterial = new BABYLON.StandardMaterial('skyboxMaterial', this.scene);
             skyboxMaterial.reflectionTexture = new BABYLON.CubeTexture('assets/TropicalSunnyDay', this.scene);
             skyboxMaterial.reflectionTexture.coordinatesMode = BABYLON.Texture.SKYBOX_MODE;
             skyboxMaterial.disableLighting = true;
-            this._skybox.infiniteDistance = true;
-            this._skybox.material = skyboxMaterial;
+            this.skybox.infiniteDistance = true;
+            this.skybox.material = skyboxMaterial;
         };
         /**
          * Setup physics for the given cube

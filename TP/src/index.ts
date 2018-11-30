@@ -3,13 +3,12 @@ module BABYLON {
         // Public members
         public engine: Engine;
         public scene: Scene;
-
-        public camera: FreeCamera;
+        public camera: ArcRotateCamera;
         public light: PointLight;
-
         public ground: GroundMesh;
-
-        private _skybox: Mesh;
+        private skybox: Mesh;
+        private maxSheep: number = 5;
+        private sheeps: number = 0;
 
         /**
          * Constructor
@@ -20,18 +19,24 @@ module BABYLON {
             this.scene = new Scene(this.engine);
             this.scene.enablePhysics(new Vector3(0, -50.81, 0), new CannonJSPlugin());
 
-            this.camera = new FreeCamera('camera', new Vector3(50, 10, 0), this.scene);
+            this.camera = new ArcRotateCamera('rotate', 0, 1.5, 1, new Vector3(200, 10, 0), this.scene);
+            this.camera.inputs.clear();
+            this.camera.inputs.add(new BABYLON.ArcRotateCameraPointersInput());
             this.camera.attachControl(this.engine.getRenderingCanvas());
-            this.camera.setTarget(new Vector3(0, 15, 0));
 
             this.light = new PointLight('light', new Vector3(15, 15, 15), this.scene);
 
             this.ground = <GroundMesh>Mesh.CreateGround('ground', 1000, 100, 32, this.scene);
             this.ground.physicsImpostor = new PhysicsImpostor(this.ground, PhysicsImpostor.BoxImpostor, {
-                mass: 0
+                mass: 0,
             });
 
-            this.createSheep();
+            this.engine.runRenderLoop(() => {
+                while (this.sheeps < this.maxSheep) {
+                    this.createSheep();
+                    this.sheeps++;
+                }
+            })
 
             this.createSkybox();
         }
@@ -41,7 +46,7 @@ module BABYLON {
             let meshTask = assetsManager.addMeshTask("sheep", "", "./assets/", "mouton-bab.babylon");
             meshTask.onSuccess = (task) => {
                 const sheep = task.loadedMeshes[0];
-                sheep.position = new Vector3(0, 5, 0);
+                sheep.position = new Vector3(0, 3, 0);
 
                 const material = new StandardMaterial('sheepColor', this.scene);
                 sheep.material = material;
@@ -50,13 +55,13 @@ module BABYLON {
 
                 this.engine.runRenderLoop(() => {
                     this.sheepMove(sheep);
-                })             
+                })
             }
             meshTask.onError = function (task, message, exception) {
                 console.log(message, exception);
             }
 
-            assetsManager.load();  
+            assetsManager.load();
         }
 
         sheepMove(sheep: AbstractMesh): void {
@@ -67,23 +72,23 @@ module BABYLON {
             sheep.actionManager = new BABYLON.ActionManager(this.scene);
             sheep.actionManager.registerAction(new ExecuteCodeAction(
                 BABYLON.ActionManager.OnPickTrigger,
-                function(event) {
+                function (event) {
                     console.log("test");
                 }
             ))
         }
 
         createSkybox() {
-            this._skybox = BABYLON.Mesh.CreateBox('skybox', 1000, this.scene, false, BABYLON.Mesh.BACKSIDE);
+            this.skybox = BABYLON.Mesh.CreateBox('skybox', 1000, this.scene, false, BABYLON.Mesh.BACKSIDE);
             let skyboxMaterial = new BABYLON.StandardMaterial('skyboxMaterial', this.scene);
             skyboxMaterial.reflectionTexture = new BABYLON.CubeTexture('assets/TropicalSunnyDay', this.scene);
             skyboxMaterial.reflectionTexture.coordinatesMode = BABYLON.Texture.SKYBOX_MODE;
             skyboxMaterial.disableLighting = true;
-            this._skybox.infiniteDistance = true;
-            this._skybox.material = skyboxMaterial;
+            this.skybox.infiniteDistance = true;
+            this.skybox.material = skyboxMaterial;
         }
 
-       
+
         /**
          * Setup physics for the given cube
          */

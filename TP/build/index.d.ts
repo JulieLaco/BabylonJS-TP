@@ -3,10 +3,12 @@ declare module BABYLON {
     class Main {
         engine: Engine;
         scene: Scene;
-        camera: FreeCamera;
+        camera: ArcRotateCamera;
         light: PointLight;
         ground: GroundMesh;
-        private _skybox;
+        private skybox;
+        private maxSheep;
+        private sheeps;
         /**
          * Constructor
          */
