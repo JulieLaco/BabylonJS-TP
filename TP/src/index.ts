@@ -31,43 +31,33 @@ module BABYLON {
             this.camera.upperAlphaLimit = 0.20;
 
             this.canvas.addEventListener("click", (evt) => {
-                this.canvas['requestPointerLock'] =
-                    this.canvas['requestPointerLock'] ||
-                    this.canvas.msRequestPointerLock ||
-                    this.canvas.mozRequestPointerLock ||
-                    this.canvas.webkitRequestPointerLock;
+                this.canvas['requestPointerLock'] = this.canvas['requestPointerLock']
+                    || this.canvas.msRequestPointerLock
+                    || this.canvas.mozRequestPointerLock
+                    || this.canvas.webkitRequestPointerLock;
                 if (this.canvas['requestPointerLock']) {
                     this.canvas['requestPointerLock']();
                 }
             }, false);
 
             const pointerlockchange = function (event) {
-                    this.controlEnabled = (
-                        document.mozPointerLockElement ===
-                        this.canvas 
-                        || document.webkitPointerLockElement === this.canvas 
-                        || document.msPointerLockElement === this.canvas
-                        || document['requestPointerLock'] === this.canvas);
+                this.controlEnabled = (
+                    document.mozPointerLockElement === this.canvas
+                    || document.webkitPointerLockElement === this.canvas
+                    || document.msPointerLockElement === this.canvas
+                    || document['requestPointerLock'] === this.canvas);
 
-                    if (!this.controlEnabled) {
-                        this.camera.detachControl(this.canvas);
-                    } else {
-                        this.camera.attachControl(this.canvas);
-                    }
-                };
+                if (!this.controlEnabled) {
+                    this.camera.detachControl(this.canvas);
+                } else {
+                    this.camera.attachControl(this.canvas);
+                }
+            };
 
-            document.addEventListener("pointerlockchange",
-                pointerlockchange,
-                false);
-            document.addEventListener("mspointerlockchange",
-                pointerlockchange,
-                false);
-            document.addEventListener("mozpointerlockchange",
-                pointerlockchange,
-                false);
-            document.addEventListener("webkitpointerlockchange",
-                pointerlockchange,
-                false);
+            document.addEventListener("pointerlockchange", pointerlockchange, false);
+            document.addEventListener("mspointerlockchange", pointerlockchange, false);
+            document.addEventListener("mozpointerlockchange", pointerlockchange, false);
+            document.addEventListener("webkitpointerlockchange", pointerlockchange, false);
 
             this.light = new PointLight('light', new Vector3(15, 15, 15), this.scene);
 

@@ -21,18 +21,16 @@ var BABYLON;
             this.camera.lowerAlphaLimit = -0.20;
             this.camera.upperAlphaLimit = 0.20;
             this.canvas.addEventListener("click", function (evt) {
-                _this.canvas['requestPointerLock'] =
-                    _this.canvas['requestPointerLock'] ||
-                        _this.canvas.msRequestPointerLock ||
-                        _this.canvas.mozRequestPointerLock ||
-                        _this.canvas.webkitRequestPointerLock;
+                _this.canvas['requestPointerLock'] = _this.canvas['requestPointerLock']
+                    || _this.canvas.msRequestPointerLock
+                    || _this.canvas.mozRequestPointerLock
+                    || _this.canvas.webkitRequestPointerLock;
                 if (_this.canvas['requestPointerLock']) {
                     _this.canvas['requestPointerLock']();
                 }
             }, false);
             var pointerlockchange = function (event) {
-                this.controlEnabled = (document.mozPointerLockElement ===
-                    this.canvas
+                this.controlEnabled = (document.mozPointerLockElement === this.canvas
                     || document.webkitPointerLockElement === this.canvas
                     || document.msPointerLockElement === this.canvas
                     || document['requestPointerLock'] === this.canvas);
