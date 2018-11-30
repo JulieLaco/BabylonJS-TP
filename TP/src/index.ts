@@ -25,10 +25,10 @@ module BABYLON {
             this.camera.inputs.clear();
             this.camera.inputs.add(new BABYLON.ArcRotateCameraPointersInput());
             this.camera.attachControl(this.engine.getRenderingCanvas());
-            this.camera.upperBetaLimit = 1.5;
-            this.camera.lowerBetaLimit = 1.5;
-            this.camera.lowerAlphaLimit = -0.20;
-            this.camera.upperAlphaLimit = 0.20;
+            this.camera.upperBetaLimit = 1.6;
+            this.camera.lowerBetaLimit = 1.3;
+            this.camera.lowerAlphaLimit = -0.40;
+            this.camera.upperAlphaLimit = 0.40;
 
             this.canvas.addEventListener("click", (evt) => {
                 this.canvas['requestPointerLock'] = this.canvas['requestPointerLock']
@@ -53,15 +53,32 @@ module BABYLON {
                     this.camera.attachControl(this.canvas);
                 }
             };
-
+            
             document.addEventListener("pointerlockchange", pointerlockchange, false);
             document.addEventListener("mspointerlockchange", pointerlockchange, false);
             document.addEventListener("mozpointerlockchange", pointerlockchange, false);
             document.addEventListener("webkitpointerlockchange", pointerlockchange, false);
 
+            var box = BABYLON.Mesh.CreateBox("box", 0.5, this.scene);
+            box.scaling.x = 10;
+            box.scaling.y = 0.3;
+            box.scaling.z = 0.3;
+            
+            let material = new StandardMaterial('test', this.scene);
+            material.diffuseColor = new BABYLON.Color3(1, 1, 1);
+            box.rotate(new Vector3(0,180,0),-1.9);
+            box.material = material;
+            box.parent = this.camera;
+            box.position = new Vector3(1,-1,1);
+
             this.light = new PointLight('light', new Vector3(15, 15, 15), this.scene);
 
             this.ground = <GroundMesh>Mesh.CreateGround('ground', 1000, 100, 32, this.scene);
+            
+            let groundmaterial = new StandardMaterial('test2', this.scene);
+            groundmaterial.diffuseColor = new BABYLON.Color3(0,1,0);
+            this.ground.material = groundmaterial;
+
             this.ground.physicsImpostor = new PhysicsImpostor(this.ground, PhysicsImpostor.BoxImpostor, {
                 mass: 0,
             });

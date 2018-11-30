@@ -16,10 +16,10 @@ var BABYLON;
             this.camera.inputs.clear();
             this.camera.inputs.add(new BABYLON.ArcRotateCameraPointersInput());
             this.camera.attachControl(this.engine.getRenderingCanvas());
-            this.camera.upperBetaLimit = 1.5;
-            this.camera.lowerBetaLimit = 1.5;
-            this.camera.lowerAlphaLimit = -0.20;
-            this.camera.upperAlphaLimit = 0.20;
+            this.camera.upperBetaLimit = 1.6;
+            this.camera.lowerBetaLimit = 1.3;
+            this.camera.lowerAlphaLimit = -0.40;
+            this.camera.upperAlphaLimit = 0.40;
             this.canvas.addEventListener("click", function (evt) {
                 _this.canvas['requestPointerLock'] = _this.canvas['requestPointerLock']
                     || _this.canvas.msRequestPointerLock
@@ -45,8 +45,21 @@ var BABYLON;
             document.addEventListener("mspointerlockchange", pointerlockchange, false);
             document.addEventListener("mozpointerlockchange", pointerlockchange, false);
             document.addEventListener("webkitpointerlockchange", pointerlockchange, false);
+            var box = BABYLON.Mesh.CreateBox("box", 0.5, this.scene);
+            box.scaling.x = 10;
+            box.scaling.y = 0.3;
+            box.scaling.z = 0.3;
+            var material = new BABYLON.StandardMaterial('test', this.scene);
+            material.diffuseColor = new BABYLON.Color3(1, 1, 1);
+            box.rotate(new BABYLON.Vector3(0, 180, 0), -1.9);
+            box.material = material;
+            box.parent = this.camera;
+            box.position = new BABYLON.Vector3(1, -1, 1);
             this.light = new BABYLON.PointLight('light', new BABYLON.Vector3(15, 15, 15), this.scene);
             this.ground = BABYLON.Mesh.CreateGround('ground', 1000, 100, 32, this.scene);
+            var groundmaterial = new BABYLON.StandardMaterial('test2', this.scene);
+            groundmaterial.diffuseColor = new BABYLON.Color3(0, 1, 0);
+            this.ground.material = groundmaterial;
             this.ground.physicsImpostor = new BABYLON.PhysicsImpostor(this.ground, BABYLON.PhysicsImpostor.BoxImpostor, {
                 mass: 0,
             });
