@@ -9,9 +9,10 @@ var BABYLON;
             this.maxSheep = 5;
             this.sheeps = 0;
             this.engine = new BABYLON.Engine(document.getElementById('renderCanvas'));
+            this.canvas = this.engine.getRenderingCanvas();
             this.scene = new BABYLON.Scene(this.engine);
             this.scene.enablePhysics(new BABYLON.Vector3(0, -50.81, 0), new BABYLON.CannonJSPlugin());
-            this.camera = new BABYLON.ArcRotateCamera('rotate', 0, 1.5, 1, new BABYLON.Vector3(200, 10, 0), this.scene);
+            this.camera = new BABYLON.ArcRotateCamera('camera', 0, 1.5, 1, new BABYLON.Vector3(200, 10, 0), this.scene);
             this.camera.inputs.clear();
             this.camera.inputs.add(new BABYLON.ArcRotateCameraPointersInput());
             this.camera.attachControl(this.engine.getRenderingCanvas());
@@ -19,6 +20,33 @@ var BABYLON;
             this.camera.lowerBetaLimit = 1.5;
             this.camera.lowerAlphaLimit = -0.20;
             this.camera.upperAlphaLimit = 0.20;
+            this.canvas.addEventListener("click", function (evt) {
+                _this.canvas['requestPointerLock'] =
+                    _this.canvas['requestPointerLock'] ||
+                        _this.canvas.msRequestPointerLock ||
+                        _this.canvas.mozRequestPointerLock ||
+                        _this.canvas.webkitRequestPointerLock;
+                if (_this.canvas['requestPointerLock']) {
+                    _this.canvas['requestPointerLock']();
+                }
+            }, false);
+            var pointerlockchange = function (event) {
+                this.controlEnabled = (document.mozPointerLockElement ===
+                    this.canvas
+                    || document.webkitPointerLockElement === this.canvas
+                    || document.msPointerLockElement === this.canvas
+                    || document['requestPointerLock'] === this.canvas);
+                if (!this.controlEnabled) {
+                    this.camera.detachControl(this.canvas);
+                }
+                else {
+                    this.camera.attachControl(this.canvas);
+                }
+            };
+            document.addEventListener("pointerlockchange", pointerlockchange, false);
+            document.addEventListener("mspointerlockchange", pointerlockchange, false);
+            document.addEventListener("mozpointerlockchange", pointerlockchange, false);
+            document.addEventListener("webkitpointerlockchange", pointerlockchange, false);
             this.light = new BABYLON.PointLight('light', new BABYLON.Vector3(15, 15, 15), this.scene);
             this.ground = BABYLON.Mesh.CreateGround('ground', 1000, 100, 32, this.scene);
             this.ground.physicsImpostor = new BABYLON.PhysicsImpostor(this.ground, BABYLON.PhysicsImpostor.BoxImpostor, {

@@ -9,6 +9,7 @@ declare module BABYLON {
         private skybox;
         private maxSheep;
         private sheeps;
+        private canvas;
         /**
          * Constructor
          */
