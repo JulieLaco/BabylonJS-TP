@@ -15,6 +15,10 @@ var BABYLON;
             this.camera.inputs.clear();
             this.camera.inputs.add(new BABYLON.ArcRotateCameraPointersInput());
             this.camera.attachControl(this.engine.getRenderingCanvas());
+            this.camera.upperBetaLimit = 1.5;
+            this.camera.lowerBetaLimit = 1.5;
+            this.camera.lowerAlphaLimit = -0.20;
+            this.camera.upperAlphaLimit = 0.20;
             this.light = new BABYLON.PointLight('light', new BABYLON.Vector3(15, 15, 15), this.scene);
             this.ground = BABYLON.Mesh.CreateGround('ground', 1000, 100, 32, this.scene);
             this.ground.physicsImpostor = new BABYLON.PhysicsImpostor(this.ground, BABYLON.PhysicsImpostor.BoxImpostor, {

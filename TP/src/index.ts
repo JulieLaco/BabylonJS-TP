@@ -23,6 +23,10 @@ module BABYLON {
             this.camera.inputs.clear();
             this.camera.inputs.add(new BABYLON.ArcRotateCameraPointersInput());
             this.camera.attachControl(this.engine.getRenderingCanvas());
+            this.camera.upperBetaLimit = 1.5;
+            this.camera.lowerBetaLimit = 1.5;
+            this.camera.lowerAlphaLimit = -0.20;
+            this.camera.upperAlphaLimit = 0.20;
 
             this.light = new PointLight('light', new Vector3(15, 15, 15), this.scene);
 
