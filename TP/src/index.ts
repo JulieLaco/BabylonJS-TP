@@ -99,6 +99,9 @@ module BABYLON {
             this.sheepNumber++;
             meshTask.onSuccess = (task) => {
                 const sheep = task.loadedMeshes[0];
+                
+                // sheep.clone;
+
                 let line = Math.floor(Math.random() * 3);
                 switch (line) {
                     case 0:
