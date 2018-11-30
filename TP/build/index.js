@@ -29,7 +29,7 @@ var BABYLON;
                 var material = new BABYLON.StandardMaterial('sheepColor', _this.scene);
                 sheep.material = material;
                 material.diffuseColor = new BABYLON.Color3(1, 0, 0);
-                material.emissiveColor = new BABYLON.Color3(1, 0, 0);
+                //material.emissiveColor = new Color3(1, 0, 0);
                 _this.engine.runRenderLoop(function () {
                     _this.sheepMove(sheep);
                 });
@@ -41,6 +41,12 @@ var BABYLON;
         };
         Main.prototype.sheepMove = function (sheep) {
             sheep.position.x += 0.1;
+        };
+        Main.prototype.sheepExploded = function (sheep) {
+            sheep.actionManager = new BABYLON.ActionManager(this.scene);
+            sheep.actionManager.registerAction(new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnPickTrigger, function (event) {
+                console.log("test");
+            }));
         };
         Main.prototype.createSkybox = function () {
             this._skybox = BABYLON.Mesh.CreateBox('skybox', 1000, this.scene, false, BABYLON.Mesh.BACKSIDE);

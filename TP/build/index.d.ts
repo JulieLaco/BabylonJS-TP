@@ -13,6 +13,7 @@ declare module BABYLON {
         constructor();
         createSheep(): void;
         sheepMove(sheep: AbstractMesh): void;
+        sheepExploded(sheep: AbstractMesh): void;
         createSkybox(): void;
         /**
          * Setup physics for the given cube

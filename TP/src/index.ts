@@ -46,7 +46,7 @@ module BABYLON {
                 const material = new StandardMaterial('sheepColor', this.scene);
                 sheep.material = material;
                 material.diffuseColor = new Color3(1, 0, 0);
-                material.emissiveColor = new Color3(1, 0, 0);
+                //material.emissiveColor = new Color3(1, 0, 0);
 
                 this.engine.runRenderLoop(() => {
                     this.sheepMove(sheep);
@@ -61,6 +61,16 @@ module BABYLON {
 
         sheepMove(sheep: AbstractMesh): void {
             sheep.position.x += 0.1;
+        }
+
+        sheepExploded(sheep: AbstractMesh): void {
+            sheep.actionManager = new BABYLON.ActionManager(this.scene);
+            sheep.actionManager.registerAction(new ExecuteCodeAction(
+                BABYLON.ActionManager.OnPickTrigger,
+                function(event) {
+                    console.log("test");
+                }
+            ))
         }
 
         createSkybox() {
