@@ -7,7 +7,8 @@ var BABYLON;
         function Main() {
             var _this = this;
             this.maxSheep = 5;
-            this.sheeps = 0;
+            this.sheepNumber = 0;
+            this.sheeps = [];
             this.engine = new BABYLON.Engine(document.getElementById('renderCanvas'));
             this.canvas = this.engine.getRenderingCanvas();
             this.scene = new BABYLON.Scene(this.engine);
@@ -16,62 +17,98 @@ var BABYLON;
             this.camera.inputs.clear();
             this.camera.inputs.add(new BABYLON.ArcRotateCameraPointersInput());
             this.camera.attachControl(this.engine.getRenderingCanvas());
-            this.camera.upperBetaLimit = 1.5;
-            this.camera.lowerBetaLimit = 1.5;
-            this.camera.lowerAlphaLimit = -0.20;
-            this.camera.upperAlphaLimit = 0.20;
-            this.canvas.addEventListener("click", function (evt) {
-                _this.canvas['requestPointerLock'] = _this.canvas['requestPointerLock']
-                    || _this.canvas.msRequestPointerLock
-                    || _this.canvas.mozRequestPointerLock
-                    || _this.canvas.webkitRequestPointerLock;
-                if (_this.canvas['requestPointerLock']) {
-                    _this.canvas['requestPointerLock']();
-                }
-            }, false);
-            var pointerlockchange = function (event) {
-                this.controlEnabled = (document.mozPointerLockElement === this.canvas
-                    || document.webkitPointerLockElement === this.canvas
-                    || document.msPointerLockElement === this.canvas
-                    || document['requestPointerLock'] === this.canvas);
-                if (!this.controlEnabled) {
-                    this.camera.detachControl(this.canvas);
-                }
-                else {
-                    this.camera.attachControl(this.canvas);
-                }
-            };
-            document.addEventListener("pointerlockchange", pointerlockchange, false);
-            document.addEventListener("mspointerlockchange", pointerlockchange, false);
-            document.addEventListener("mozpointerlockchange", pointerlockchange, false);
-            document.addEventListener("webkitpointerlockchange", pointerlockchange, false);
+            // this.camera.upperBetaLimit = 1.5;
+            // this.camera.lowerBetaLimit = 1.5;
+            // this.camera.lowerAlphaLimit = -0.20;
+            // this.camera.upperAlphaLimit = 0.20;
+            // this.canvas.addEventListener("click", (evt) => {
+            //     this.canvas['requestPointerLock'] = this.canvas['requestPointerLock']
+            //         || this.canvas.msRequestPointerLock
+            //         || this.canvas.mozRequestPointerLock
+            //         || this.canvas.webkitRequestPointerLock;
+            //     if (this.canvas['requestPointerLock']) {
+            //         this.canvas['requestPointerLock']();
+            //     }
+            // }, false);
+            // const pointerlockchange = function (event) {
+            //     this.controlEnabled = (
+            //         document.mozPointerLockElement === this.canvas
+            //         || document.webkitPointerLockElement === this.canvas
+            //         || document.msPointerLockElement === this.canvas
+            //         || document['requestPointerLock'] === this.canvas);
+            //     if (!this.controlEnabled) {
+            //         this.camera.detachControl(this.canvas);
+            //     } else {
+            //         this.camera.attachControl(this.canvas);
+            //     }
+            // };
+            // document.addEventListener("pointerlockchange", pointerlockchange, false);
+            // document.addEventListener("mspointerlockchange", pointerlockchange, false);
+            // document.addEventListener("mozpointerlockchange", pointerlockchange, false);
+            // document.addEventListener("webkitpointerlockchange", pointerlockchange, false);
+            //this.createVisor();
             this.light = new BABYLON.PointLight('light', new BABYLON.Vector3(15, 15, 15), this.scene);
             this.ground = BABYLON.Mesh.CreateGround('ground', 1000, 100, 32, this.scene);
             this.ground.physicsImpostor = new BABYLON.PhysicsImpostor(this.ground, BABYLON.PhysicsImpostor.BoxImpostor, {
                 mass: 0,
             });
             this.engine.runRenderLoop(function () {
-                while (_this.sheeps < _this.maxSheep) {
+                while (_this.sheepNumber <= _this.maxSheep) {
+                    console.log("1");
                     _this.createSheep();
-                    _this.sheeps++;
                 }
             });
             this.createSkybox();
         }
+        Main.prototype.createSound = function () {
+            this.sheepDieSound = new BABYLON.Sound('Music', './assets/Joueur du Grenier - Excalibur 2555 A.D - Playstation - Le cri du scorpion.mp3', this.scene);
+        };
+        Main.prototype.createVisor = function () {
+            var ui = BABYLON.GUI.AdvancedDynamicTexture.CreateFullscreenUI('ui');
+            var target = new BABYLON.GUI.Image('target', './assets/crosshairsr.png');
+            target.width = '10%';
+            ui.addControl(target);
+            target.autoScale = true;
+        };
         Main.prototype.createSheep = function () {
             var _this = this;
             var assetsManager = new BABYLON.AssetsManager(this.scene);
             var meshTask = assetsManager.addMeshTask("sheep", "", "./assets/", "mouton-bab.babylon");
+            this.sheepNumber++;
             meshTask.onSuccess = function (task) {
                 var sheep = task.loadedMeshes[0];
-                sheep.position = new BABYLON.Vector3(0, 3, 0);
+                var line = Math.floor(Math.random() * 3);
+                switch (line) {
+                    case 0:
+                        {
+                            sheep.position = new BABYLON.Vector3(0, 2, -25);
+                            break;
+                        }
+                    case 1:
+                        {
+                            sheep.position = new BABYLON.Vector3(0, 2, 0);
+                            break;
+                        }
+                    case 2:
+                        {
+                            sheep.position = new BABYLON.Vector3(0, 2, 25);
+                            break;
+                        }
+                    default:
+                        {
+                            sheep.position = new BABYLON.Vector3(0, 2, 0);
+                            break;
+                        }
+                }
                 var material = new BABYLON.StandardMaterial('sheepColor', _this.scene);
                 sheep.material = material;
                 material.diffuseColor = new BABYLON.Color3(1, 0, 0);
-                //material.emissiveColor = new Color3(1, 0, 0);
+                material.emissiveColor = new BABYLON.Color3(1, 0, 0);
                 _this.engine.runRenderLoop(function () {
                     _this.sheepMove(sheep);
                 });
+                _this.sheepExploded(sheep);
+                _this.createSound();
             };
             meshTask.onError = function (task, message, exception) {
                 console.log(message, exception);
@@ -82,9 +119,12 @@ var BABYLON;
             sheep.position.x += 0.1;
         };
         Main.prototype.sheepExploded = function (sheep) {
+            var _this = this;
             sheep.actionManager = new BABYLON.ActionManager(this.scene);
-            sheep.actionManager.registerAction(new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnPickTrigger, function (event) {
-                console.log("test");
+            sheep.actionManager.registerAction(new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnLeftPickTrigger, function () {
+                sheep.dispose(true, true);
+                _this.sheepNumber--;
+                _this.sheepDieSound.play();
             }));
         };
         Main.prototype.createSkybox = function () {

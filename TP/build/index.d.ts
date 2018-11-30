@@ -8,12 +8,16 @@ declare module BABYLON {
         ground: GroundMesh;
         private skybox;
         private maxSheep;
+        private sheepNumber;
         private sheeps;
         private canvas;
+        private sheepDieSound;
         /**
          * Constructor
          */
         constructor();
+        createSound(): void;
+        createVisor(): void;
         createSheep(): void;
         sheepMove(sheep: AbstractMesh): void;
         sheepExploded(sheep: AbstractMesh): void;
