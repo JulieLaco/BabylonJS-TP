@@ -23,6 +23,7 @@ module BABYLON {
         public ground: GroundMesh;
 
         public monsterDieSound: Sound;
+        public menuSound: Sound;
 
         public skybox: Mesh;
 
@@ -33,6 +34,9 @@ module BABYLON {
         public nbMonster = 1;
         public playerMaxLife = 5;
         public playerLifes : Sprite[] = [];
+        public gameOverSprite : Sprite;
+
+        
         /**
          * Constructor
          */
@@ -53,12 +57,19 @@ module BABYLON {
             this.ground.physicsImpostor = new PhysicsImpostor(this.ground, PhysicsImpostor.BoxImpostor, {
                 mass: 0
             });
+
+            let myTexture = new BABYLON.Texture("./assets/SiteWork.Planting.Grass.StAugustine1.jpg", this.scene);
+            myTexture.uScale = 15.0;
+            myTexture.vScale = 15.0;
             let material = new BABYLON.StandardMaterial("groundMat", this.scene);
-            material.diffuseTexture = new BABYLON.Texture("./assets/Sol.jpg", this.scene);
+            material.diffuseTexture = myTexture;
             this.ground.material = material;
 
+            this.LoadMusic();
+            setTimeout(() => {
+                this.ititialiseAlert();
+            }, 500);
 
-            this.startGame();
         }
 
         public boardLoading(): void{
@@ -69,11 +80,10 @@ module BABYLON {
                 Initaliser d'autre robots comme spectateurs dans la map;
             */
             this.createSkybox();
-            this.LoadMusic();
-            this.ititialiseAlert();
             this.initialiseMap(); 
             this.initialiseMonster();
             this.initialisePV();
+            this.gameOver();
         }
 
         public createSkybox(): void{
@@ -90,6 +100,12 @@ module BABYLON {
             this.monsterDieSound = new BABYLON.Sound('Music', 
             './project_Music/Joueur du Grenier - Excalibur 2555 A.D - Playstation - Le cri du scorpion.mp3', 
             this.scene)
+
+            this.menuSound = new BABYLON.Sound('MusicMenu', 
+            './project_Music/David_Goodenough_-_JDG.mp3', 
+            this.scene, null,  {
+                loop : true
+            })
         }
 
         public initialisePV(): void{
@@ -105,8 +121,43 @@ module BABYLON {
             }
         }
 
-        public ititialiseAlert(): void{
+        public ititialiseAlert(): void 
+        {
+            let menuSpriteSpriteManager = new BABYLON.SpriteManager("menuSpriteSpriteManager", "./assets/Infogrames.jpg", 1, 800, this.scene);
+            let menuSprite = new BABYLON.Sprite("menuSprite", menuSpriteSpriteManager);
+            menuSprite.width = 10;
+            menuSprite.height = 10;
+            menuSprite.position.x = this.camera.position.x - 5;
+            menuSprite.position.z = 0;
+            menuSprite.position.y = 8;
+            menuSprite.isPickable = false;
 
+            let JMBSpriteSpriteManager = new BABYLON.SpriteManager("JMBSpriteSpriteManager", "./assets/JMB.png", 1, 800, this.scene);
+            let JMBSprite = new BABYLON.Sprite("JMBSprite", JMBSpriteSpriteManager);
+            JMBSprite.width = 1.3;
+            JMBSprite.height = 1.3;
+            JMBSprite.position.z = -0.045;
+            JMBSprite.position.y = 9.3;
+            JMBSprite.position.x = this.camera.position.x - 3;
+            JMBSprite.isPickable = false;
+
+            let DGESpriteSpriteManager = new BABYLON.SpriteManager("DGESpriteSpriteManager", "./assets/DGE.png", 1, 800, this.scene);
+            let DGESprite = new BABYLON.Sprite("DGESprite", DGESpriteSpriteManager);
+            DGESprite.width = 2;
+            DGESprite.height = 2;
+            DGESprite.position.x = this.camera.position.x - 3;
+            DGESprite.position.z = -2;
+            DGESprite.position.y = 9.5;
+            DGESprite.isPickable = false;
+
+            this.menuSound.play();
+            setTimeout(() => {
+                this.menuSound.stop();
+                menuSprite.isVisible = false;
+                JMBSprite.isVisible = false;
+                DGESprite.isVisible = false;
+                this.startGame();
+            }, 0)
         }
 
         public initialiseMap(): void{
@@ -130,15 +181,18 @@ module BABYLON {
 
         public createMonster(index): void{
             BABYLON.SceneLoader.ImportMesh("", './assets/', 'RobotExpressive.glb', this.scene, (newMeshes) => {
-                let material = new BABYLON.StandardMaterial("mat1", this.scene);
-                material.diffuseColor = new BABYLON.Color3(0, 1.5, 0);
+                // let robotTexture = new BABYLON.Texture("./assets/bronze.jpg", this.scene);
+                
+                // let material = new BABYLON.StandardMaterial("mat1", this.scene);
+                // material.emissiveTexture = robotTexture;
+
                 newMeshes.forEach((mesh) => {
                     if(mesh.id === "__root__"){
                         mesh.position = new Vector3(0, -20, 0);
                         mesh.rotation.y = 1.5;
                     }
                     mesh.name += " root" + index;
-                    mesh.material = material;
+                    // mesh.material = material;
                     mesh.actionManager = new ActionManager(this.scene);
                     mesh.actionManager.registerAction(new ExecuteCodeAction(
                     ActionManager.OnLeftPickTrigger, () => {
@@ -146,6 +200,7 @@ module BABYLON {
                         }
                     ));
                 });
+
                 this.OriginalMonster = this.scene;
                 this.OriginalMonster.animationGroups.forEach(element => {
                     element.stop();
@@ -166,6 +221,16 @@ module BABYLON {
             }, 5000)
         }
 
+        public gameOver(): void {
+            let gameOverSpriteManager = new BABYLON.SpriteManager("gameOverSpriteManager", "./assets/gameOver.png", 1, 800, this.scene);
+            this.gameOverSprite = new BABYLON.Sprite("gameOver", gameOverSpriteManager);
+            this.gameOverSprite.position.z = 0;
+            this.gameOverSprite.position.y = 10;
+            this.gameOverSprite.width = 30;
+            this.gameOverSprite.height = 30;
+            this.gameOverSprite.isVisible = false;
+        }
+
         public letsRun(): void{
             this.engine.runRenderLoop(() => {
                 if(this.camera.rotation.y < -2) {
@@ -177,7 +242,10 @@ module BABYLON {
 
                 if(this.playerMaxLife <= 0){
                     //  soit on arret le rendu comme fait dessous soit on affiche un écran de défaite
-                    this.engine.stopRenderLoop();
+                    this.gameOverSprite.isVisible = true;
+                    setTimeout(() => {
+                        this.engine.stopRenderLoop();
+                    }, 500);
                 }
                 this.rootMonsters.forEach(element => {
                     switch(element){

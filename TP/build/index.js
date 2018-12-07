@@ -5,6 +5,7 @@ var BABYLON;
          * Constructor
          */
         function Main() {
+            var _this = this;
             this.rootMonsters = [];
             this.isRunningMonsters = [];
             this.count = 0;
@@ -23,10 +24,16 @@ var BABYLON;
             this.ground.physicsImpostor = new BABYLON.PhysicsImpostor(this.ground, BABYLON.PhysicsImpostor.BoxImpostor, {
                 mass: 0
             });
+            var myTexture = new BABYLON.Texture("./assets/SiteWork.Planting.Grass.StAugustine1.jpg", this.scene);
+            myTexture.uScale = 15.0;
+            myTexture.vScale = 15.0;
             var material = new BABYLON.StandardMaterial("groundMat", this.scene);
-            material.diffuseTexture = new BABYLON.Texture("./assets/Sol.jpg", this.scene);
+            material.diffuseTexture = myTexture;
             this.ground.material = material;
-            this.startGame();
+            this.LoadMusic();
+            setTimeout(function () {
+                _this.ititialiseAlert();
+            }, 500);
         }
         Main.prototype.boardLoading = function () {
             /*
@@ -36,11 +43,10 @@ var BABYLON;
                 Initaliser d'autre robots comme spectateurs dans la map;
             */
             this.createSkybox();
-            this.LoadMusic();
-            this.ititialiseAlert();
             this.initialiseMap();
             this.initialiseMonster();
             this.initialisePV();
+            this.gameOver();
         };
         Main.prototype.createSkybox = function () {
             this.skybox = BABYLON.Mesh.CreateBox('skybox', 1000, this.scene, false, BABYLON.Mesh.BACKSIDE);
@@ -53,6 +59,9 @@ var BABYLON;
         };
         Main.prototype.LoadMusic = function () {
             this.monsterDieSound = new BABYLON.Sound('Music', './project_Music/Joueur du Grenier - Excalibur 2555 A.D - Playstation - Le cri du scorpion.mp3', this.scene);
+            this.menuSound = new BABYLON.Sound('MusicMenu', './project_Music/David_Goodenough_-_JDG.mp3', this.scene, null, {
+                loop: true
+            });
         };
         Main.prototype.initialisePV = function () {
             var heartSpriteManager = new BABYLON.SpriteManager("heart_SpriteManager", "./assets/Heart.png", this.playerMaxLife, 800, this.scene);
@@ -67,6 +76,39 @@ var BABYLON;
             }
         };
         Main.prototype.ititialiseAlert = function () {
+            var _this = this;
+            var menuSpriteSpriteManager = new BABYLON.SpriteManager("menuSpriteSpriteManager", "./assets/Infogrames.jpg", 1, 800, this.scene);
+            var menuSprite = new BABYLON.Sprite("menuSprite", menuSpriteSpriteManager);
+            menuSprite.width = 10;
+            menuSprite.height = 10;
+            menuSprite.position.x = this.camera.position.x - 5;
+            menuSprite.position.z = 0;
+            menuSprite.position.y = 8;
+            menuSprite.isPickable = false;
+            var JMBSpriteSpriteManager = new BABYLON.SpriteManager("JMBSpriteSpriteManager", "./assets/JMB.png", 1, 800, this.scene);
+            var JMBSprite = new BABYLON.Sprite("JMBSprite", JMBSpriteSpriteManager);
+            JMBSprite.width = 1.3;
+            JMBSprite.height = 1.3;
+            JMBSprite.position.z = -0.045;
+            JMBSprite.position.y = 9.3;
+            JMBSprite.position.x = this.camera.position.x - 3;
+            JMBSprite.isPickable = false;
+            var DGESpriteSpriteManager = new BABYLON.SpriteManager("DGESpriteSpriteManager", "./assets/DGE.png", 1, 800, this.scene);
+            var DGESprite = new BABYLON.Sprite("DGESprite", DGESpriteSpriteManager);
+            DGESprite.width = 2;
+            DGESprite.height = 2;
+            DGESprite.position.x = this.camera.position.x - 3;
+            DGESprite.position.z = -2;
+            DGESprite.position.y = 9.5;
+            DGESprite.isPickable = false;
+            this.menuSound.play();
+            setTimeout(function () {
+                _this.menuSound.stop();
+                menuSprite.isVisible = false;
+                JMBSprite.isVisible = false;
+                DGESprite.isVisible = false;
+                _this.startGame();
+            }, 0);
         };
         Main.prototype.initialiseMap = function () {
         };
@@ -87,15 +129,16 @@ var BABYLON;
         Main.prototype.createMonster = function (index) {
             var _this = this;
             BABYLON.SceneLoader.ImportMesh("", './assets/', 'RobotExpressive.glb', this.scene, function (newMeshes) {
-                var material = new BABYLON.StandardMaterial("mat1", _this.scene);
-                material.diffuseColor = new BABYLON.Color3(0, 1.5, 0);
+                // let robotTexture = new BABYLON.Texture("./assets/bronze.jpg", this.scene);
+                // let material = new BABYLON.StandardMaterial("mat1", this.scene);
+                // material.emissiveTexture = robotTexture;
                 newMeshes.forEach(function (mesh) {
                     if (mesh.id === "__root__") {
                         mesh.position = new BABYLON.Vector3(0, -20, 0);
                         mesh.rotation.y = 1.5;
                     }
                     mesh.name += " root" + index;
-                    mesh.material = material;
+                    // mesh.material = material;
                     mesh.actionManager = new BABYLON.ActionManager(_this.scene);
                     mesh.actionManager.registerAction(new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnLeftPickTrigger, function () {
                         _this.shootMonster(mesh.name);
@@ -118,6 +161,15 @@ var BABYLON;
                 _this.letsRun();
             }, 5000);
         };
+        Main.prototype.gameOver = function () {
+            var gameOverSpriteManager = new BABYLON.SpriteManager("gameOverSpriteManager", "./assets/gameOver.png", 1, 800, this.scene);
+            this.gameOverSprite = new BABYLON.Sprite("gameOver", gameOverSpriteManager);
+            this.gameOverSprite.position.z = 0;
+            this.gameOverSprite.position.y = 10;
+            this.gameOverSprite.width = 30;
+            this.gameOverSprite.height = 30;
+            this.gameOverSprite.isVisible = false;
+        };
         Main.prototype.letsRun = function () {
             var _this = this;
             this.engine.runRenderLoop(function () {
@@ -129,7 +181,10 @@ var BABYLON;
                 }
                 if (_this.playerMaxLife <= 0) {
                     //  soit on arret le rendu comme fait dessous soit on affiche un écran de défaite
-                    _this.engine.stopRenderLoop();
+                    _this.gameOverSprite.isVisible = true;
+                    setTimeout(function () {
+                        _this.engine.stopRenderLoop();
+                    }, 500);
                 }
                 _this.rootMonsters.forEach(function (element) {
                     switch (element) {

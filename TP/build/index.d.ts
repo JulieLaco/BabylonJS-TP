@@ -7,6 +7,7 @@ declare module BABYLON {
         light: PointLight;
         ground: GroundMesh;
         monsterDieSound: Sound;
+        menuSound: Sound;
         skybox: Mesh;
         OriginalMonster: Scene;
         rootMonsters: any[];
@@ -15,6 +16,7 @@ declare module BABYLON {
         nbMonster: number;
         playerMaxLife: number;
         playerLifes: Sprite[];
+        gameOverSprite: Sprite;
         /**
          * Constructor
          */
@@ -28,6 +30,7 @@ declare module BABYLON {
         initialiseMonster(): void;
         createMonster(index: any): void;
         startGame(): void;
+        gameOver(): void;
         letsRun(): void;
         setMonsterPosition(element: any): void;
         checkMonsterPosition(element: any, name: any, index: any): boolean;
