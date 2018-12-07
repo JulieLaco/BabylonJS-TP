@@ -3,25 +3,41 @@ declare module BABYLON {
     class Main {
         engine: Engine;
         scene: Scene;
-        camera: ArcRotateCamera;
+        camera: FreeCamera;
         light: PointLight;
         ground: GroundMesh;
-        private skybox;
-        private maxSheep;
-        private sheepNumber;
-        private sheeps;
-        private canvas;
-        private sheepDieSound;
+        monsterDieSound: Sound;
+        skybox: Mesh;
+        OriginalMonster: Scene;
+        rootMonsters: any[];
+        isRunningMonsters: boolean[];
+        count: number;
+        nbMonster: number;
+        playerMaxLife: number;
+        playerLifes: Sprite[];
         /**
          * Constructor
          */
         constructor();
-        createSound(): void;
-        createVisor(): void;
-        createSheep(): void;
-        sheepMove(sheep: AbstractMesh): void;
-        sheepExploded(sheep: AbstractMesh): void;
+        boardLoading(): void;
         createSkybox(): void;
+        LoadMusic(): void;
+        initialisePV(): void;
+        ititialiseAlert(): void;
+        initialiseMap(): void;
+        initialiseMonster(): void;
+        createMonster(index: any): void;
+        startGame(): void;
+        letsRun(): void;
+        setMonsterPosition(element: any): void;
+        checkMonsterPosition(element: any, name: any, index: any): boolean;
+        runMonster(element: any, speed: any, animationID: any): void;
+        shootMonster(name: string): void;
+        killMonster(name: any, index: any, runAnimationID: any, animationID: any): void;
+        setMonsterPickableOrNot(name: any): void;
+        hide(name: any): void;
+        respanwMonster(index: any): void;
+        playerLooseLife(): void;
         /**
          * Setup physics for the given cube
          */

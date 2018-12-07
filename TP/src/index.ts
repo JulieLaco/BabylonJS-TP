@@ -1,173 +1,82 @@
 module BABYLON {
     export class Main {
-        // Public members
+
+        /*  => ANIMATION 
+        this.OriginalMonster.animationGroups[1].play(true);     //  ROBOT1 : 0 => 13
+        this.OriginalMonster.animationGroups[15].play(true);    //  ROBOT2 : 14 => 27
+        this.OriginalMonster.animationGroups[29].play(true);    //  ROBOT3 : 28 => 41
+        this.OriginalMonster.animationGroups[43].play(true);    //  ROBOT4 : 42 => 55
+        this.OriginalMonster.animationGroups[57].play(true);    //  ROBOT5 : 56 => 69
+        this.OriginalMonster.animationGroups[71].play(true);    //  ROBOT6 : 70 => 53
+        this.OriginalMonster.animationGroups[85].play(true);    //  ROBOT7 : 84 => 97
+        this.OriginalMonster.animationGroups[99].play(true);    //  ROBOT8 : 98 => 111
+        this.OriginalMonster.animationGroups[113].play(true);   //  ROBOT9 : 112 => 125
+        this.OriginalMonster.animationGroups[127].play(true);   //  ROBOT10 : 126 => 139
+        */
+
         public engine: Engine;
         public scene: Scene;
-        public camera: ArcRotateCamera;
+
+        public camera: FreeCamera;
         public light: PointLight;
+
         public ground: GroundMesh;
-        private skybox: Mesh;
-        private maxSheep: number = 5;
-        private sheepNumber: number = 0;
-        private sheeps: Mesh[] = [];
-        private canvas;
 
-        private sheepDieSound: Sound;
+        public monsterDieSound: Sound;
 
+        public skybox: Mesh;
+
+        public OriginalMonster : Scene;
+        public rootMonsters = [];
+        public isRunningMonsters : boolean[] = [];
+        public count = 0;
+        public nbMonster = 1;
+        public playerMaxLife = 5;
+        public playerLifes : Sprite[] = [];
         /**
          * Constructor
          */
-        constructor() {
-            this.engine = new Engine(<HTMLCanvasElement>document.getElementById('renderCanvas'));
-            this.canvas = this.engine.getRenderingCanvas();
+        constructor () {
+            this.engine = new Engine(<HTMLCanvasElement> document.getElementById('renderCanvas'));
+            this.engine.enableOfflineSupport = false;
 
             this.scene = new Scene(this.engine);
             this.scene.enablePhysics(new Vector3(0, -50.81, 0), new CannonJSPlugin());
 
-            this.camera = new ArcRotateCamera('camera', 0, 1.5, 1, new Vector3(200, 10, 0), this.scene);
-            this.camera.inputs.clear();
-            this.camera.inputs.add(new BABYLON.ArcRotateCameraPointersInput());
+            this.camera = new FreeCamera('camera', new Vector3(50, 10, 0), this.scene);
             this.camera.attachControl(this.engine.getRenderingCanvas());
-            // this.camera.upperBetaLimit = 1.5;
-            // this.camera.lowerBetaLimit = 1.5;
-            // this.camera.lowerAlphaLimit = -0.20;
-            // this.camera.upperAlphaLimit = 0.20;
+            this.camera.setTarget(new Vector3(0, 15, 0));
 
-            // this.canvas.addEventListener("click", (evt) => {
-            //     this.canvas['requestPointerLock'] = this.canvas['requestPointerLock']
-            //         || this.canvas.msRequestPointerLock
-            //         || this.canvas.mozRequestPointerLock
-            //         || this.canvas.webkitRequestPointerLock;
-            //     if (this.canvas['requestPointerLock']) {
-            //         this.canvas['requestPointerLock']();
-            //     }
-            // }, false);
+            this.light = new PointLight('light', new Vector3(200, 150, 15), this.scene);
 
-            // const pointerlockchange = function (event) {
-            //     this.controlEnabled = (
-            //         document.mozPointerLockElement === this.canvas
-            //         || document.webkitPointerLockElement === this.canvas
-            //         || document.msPointerLockElement === this.canvas
-            //         || document['requestPointerLock'] === this.canvas);
-
-            //     if (!this.controlEnabled) {
-            //         this.camera.detachControl(this.canvas);
-            //     } else {
-            //         this.camera.attachControl(this.canvas);
-            //     }
-            // };
-
-            // document.addEventListener("pointerlockchange", pointerlockchange, false);
-            // document.addEventListener("mspointerlockchange", pointerlockchange, false);
-            // document.addEventListener("mozpointerlockchange", pointerlockchange, false);
-            // document.addEventListener("webkitpointerlockchange", pointerlockchange, false);
-
-            //this.createVisor();
-
-            this.light = new PointLight('light', new Vector3(15, 15, 15), this.scene);
-
-            this.ground = <GroundMesh>Mesh.CreateGround('ground', 1000, 100, 32, this.scene);
+            this.ground = <GroundMesh> Mesh.CreateGround('ground', 1000, 100, 32, this.scene);
             this.ground.physicsImpostor = new PhysicsImpostor(this.ground, PhysicsImpostor.BoxImpostor, {
-                mass: 0,
+                mass: 0
             });
+            let material = new BABYLON.StandardMaterial("groundMat", this.scene);
+            material.diffuseTexture = new BABYLON.Texture("./assets/Sol.jpg", this.scene);
+            this.ground.material = material;
 
-            this.engine.runRenderLoop(() => {
-                while (this.sheepNumber <= this.maxSheep) {
-                    console.log("1");
-                    this.createSheep();
-                }
-            })
 
+            this.startGame();
+        }
+
+        public boardLoading(): void{
+            /*
+                set interval avec comme message d'affichage (5, 4, 3, 2, 1, GO) => équivalent au temps de chargement de setTimeOut;
+                Initialiser la map;
+                Initialiser les 10 robots de course dans un tableau de Scene => Monsters;
+                Initaliser d'autre robots comme spectateurs dans la map;
+            */
             this.createSkybox();
+            this.LoadMusic();
+            this.ititialiseAlert();
+            this.initialiseMap(); 
+            this.initialiseMonster();
+            this.initialisePV();
         }
 
-        public createSound(){
-            this.sheepDieSound = new BABYLON.Sound('Music', './assets/Joueur du Grenier - Excalibur 2555 A.D - Playstation - Le cri du scorpion.mp3', this.scene);
-        }
-
-        public createVisor() {
-            const ui = GUI.AdvancedDynamicTexture.CreateFullscreenUI('ui');
-            const target = new GUI.Image('target', './assets/crosshairsr.png');
-            target.width = '10%';
-            ui.addControl(target);
-            target.autoScale = true;
-        }
-
-        public createSheep() {
-            let assetsManager = new BABYLON.AssetsManager(this.scene);
-            let meshTask = assetsManager.addMeshTask("sheep", "", "./assets/", "mouton-bab.babylon");         
-            this.sheepNumber++;
-            meshTask.onSuccess = (task) => {
-                let sheep = task.loadedMeshes[0];
-                
-                // mettre une boucle pour cloner mes mesh
-                let mesh1 = BABYLON.Mesh.CreateSphere('sphere', 8, 2, this.scene);
-                mesh1.position = new BABYLON.Vector3(15, 1, 15);
-
-                sheep = task.loadedMeshes[0].clone('sheepMultiClonage', sheep);
-                sheep.parent = mesh1;
-
-                let line = Math.floor(Math.random() * 3);
-                switch (line) {
-                    case 0:
-                    {
-                        sheep.position = new Vector3(0, 2, -25);
-                        break;
-                    }
-                    case 1:
-                    {
-                        sheep.position = new Vector3(0, 2, 0);
-                        break;
-                    }
-                    case 2:
-                    {
-                        sheep.position = new Vector3(0, 2, 25);
-                        break;
-                    }
-                    default:
-                    {
-                        sheep.position = new Vector3(0, 2, 0);
-                        break;
-                    }
-                }
-
-                const material = new StandardMaterial('sheepColor', this.scene);
-                sheep.material = material;
-                material.diffuseColor = new Color3(1, 0, 0);
-                material.emissiveColor = new Color3(1, 0, 0);
-
-                this.engine.runRenderLoop(() => {
-                    this.sheepMove(sheep);
-                })
-                
-                this.sheepExploded(sheep);
-                this.createSound();
-            }
-
-            meshTask.onError = function (task, message, exception) {
-                console.log(message, exception);
-            }
-
-            assetsManager.load();
-        }
-
-        sheepMove(sheep: AbstractMesh): void {
-            sheep.position.x += 0.1;
-        }
-
-        sheepExploded(sheep: AbstractMesh): void {
-            sheep.actionManager = new BABYLON.ActionManager(this.scene);
-            sheep.actionManager.registerAction(new ExecuteCodeAction(
-                ActionManager.OnLeftPickTrigger,
-                () => {
-                    sheep.dispose(true, true);
-                    this.sheepNumber--;
-                    this.sheepDieSound.play();
-                }
-            ))
-        }
-
-        createSkybox() {
+        public createSkybox(): void{
             this.skybox = BABYLON.Mesh.CreateBox('skybox', 1000, this.scene, false, BABYLON.Mesh.BACKSIDE);
             let skyboxMaterial = new BABYLON.StandardMaterial('skyboxMaterial', this.scene);
             skyboxMaterial.reflectionTexture = new BABYLON.CubeTexture('assets/TropicalSunnyDay', this.scene);
@@ -177,11 +86,335 @@ module BABYLON {
             this.skybox.material = skyboxMaterial;
         }
 
+        public LoadMusic(): void {
+            this.monsterDieSound = new BABYLON.Sound('Music', 
+            './project_Music/Joueur du Grenier - Excalibur 2555 A.D - Playstation - Le cri du scorpion.mp3', 
+            this.scene)
+        }
 
+        public initialisePV(): void{
+            let heartSpriteManager = new BABYLON.SpriteManager("heart_SpriteManager", "./assets/Heart.png", this.playerMaxLife, 800, this.scene);
+            for(let x = -(Math.floor(this.playerMaxLife / 2)); x < Math.floor(this.playerMaxLife / 2) + 1; x++){
+                let coeur = new BABYLON.Sprite("heart_" + x, heartSpriteManager);
+                coeur.position.z = -5 * x;
+                coeur.position.y = 28;
+                coeur.width = 5;
+                coeur.height = 5;
+                coeur.isVisible = true;
+                this.playerLifes.push(coeur);
+            }
+        }
+
+        public ititialiseAlert(): void{
+
+        }
+
+        public initialiseMap(): void{
+
+        }
+
+        public initialiseMonster(): void{
+            for(let x = 0; x < this.nbMonster; x++){
+                this.createMonster(x);
+            }
+
+            setTimeout(() => {
+                this.OriginalMonster.meshes.forEach(element => {
+                    if(element.id === "__root__"){
+                        this.rootMonsters.push(element);
+                        this.isRunningMonsters.push(true);
+                    }
+                });
+            }, 5000);
+        }
+
+        public createMonster(index): void{
+            BABYLON.SceneLoader.ImportMesh("", './assets/', 'RobotExpressive.glb', this.scene, (newMeshes) => {
+                let material = new BABYLON.StandardMaterial("mat1", this.scene);
+                material.diffuseColor = new BABYLON.Color3(0, 1.5, 0);
+                newMeshes.forEach((mesh) => {
+                    if(mesh.id === "__root__"){
+                        mesh.position = new Vector3(0, -20, 0);
+                        mesh.rotation.y = 1.5;
+                    }
+                    mesh.name += " root" + index;
+                    mesh.material = material;
+                    mesh.actionManager = new ActionManager(this.scene);
+                    mesh.actionManager.registerAction(new ExecuteCodeAction(
+                    ActionManager.OnLeftPickTrigger, () => {
+                            this.shootMonster(mesh.name);
+                        }
+                    ));
+                });
+                this.OriginalMonster = this.scene;
+                this.OriginalMonster.animationGroups.forEach(element => {
+                    element.stop();
+                });
+            });
+        }
+
+        public startGame(): void{
+
+            this.boardLoading();
+
+            setTimeout( () => {
+                console.log(this.OriginalMonster);
+                this.rootMonsters.forEach(element => {
+                    this.setMonsterPosition(element);
+                })
+                this.letsRun();
+            }, 5000)
+        }
+
+        public letsRun(): void{
+            this.engine.runRenderLoop(() => {
+                if(this.camera.rotation.y < -2) {
+                    this.camera.rotation.y = -2;
+                }
+                if(this.camera.rotation.y > -1) {
+                    this.camera.rotation.y = -1;
+                }
+
+                if(this.playerMaxLife <= 0){
+                    //  soit on arret le rendu comme fait dessous soit on affiche un écran de défaite
+                    this.engine.stopRenderLoop();
+                }
+                this.rootMonsters.forEach(element => {
+                    switch(element){
+                        case this.rootMonsters[0]:{
+                            this.checkMonsterPosition(element, "root0", 0);
+                            if(this.isRunningMonsters[0] === true){
+                                this.runMonster(element, 1.5, 6);
+                            }
+                            break;
+                        }
+                        case this.rootMonsters[1]:{
+                            if(this.isRunningMonsters[1] === true){
+                                this.runMonster(element, 1.5, 20);
+                            }
+                            break;
+                        }
+                        case this.rootMonsters[2]:{
+                            if(this.isRunningMonsters[2] === true){
+                                this.runMonster(element, 1.5, 34);
+                            }
+                            break;
+                        }
+                        case this.rootMonsters[3]:{
+                            if(this.isRunningMonsters[3] === true){
+                                this.runMonster(element, 1, 52);
+                            }
+                            break;
+                        }
+                        case this.rootMonsters[4]:{
+                           if(this.isRunningMonsters[4] === true){
+                                this.runMonster(element, 1, 66);
+                            }
+                            break;
+                        }
+                        case this.rootMonsters[5]:{
+                            if(this.isRunningMonsters[5] === true){
+                                this.runMonster(element, 1, 80);
+                            }
+                            break;
+                        }
+                        case this.rootMonsters[6]:{
+                            if(this.isRunningMonsters[6] === true){
+                                this.runMonster(element, 1, 94);
+                            }
+                            break;
+                        }
+                        case this.rootMonsters[7]:{
+                            if(this.isRunningMonsters[7] === true){
+                                this.runMonster(element, 1, 108);
+                            }
+                            break;
+                        }
+                        case this.rootMonsters[8]:{
+                            if(this.isRunningMonsters[8] === true){
+                                this.runMonster(element, 1.15, 122);
+                            }
+                            break;
+                        }
+                        case this.rootMonsters[9]:{
+                            if(this.isRunningMonsters[9] === true){
+                                this.runMonster(element, 1.15, 136);
+                            }
+                            break;
+                        }
+                    }
+                });
+            });
+        }
+
+        public setMonsterPosition(element): void{
+            let rdm = Math.floor(Math.random() * 6);
+            switch(rdm){
+                case 1:{
+                    element.position = new Vector3(0, 0, -20);
+                    break;
+                }
+                case 2:{
+                    element.position = new Vector3(0, 0, -10);
+                    break;
+                }
+                case 3:{
+                    element.position = new Vector3(0, 0, 0);
+                    break;
+                }
+                case 4:{
+                    element.position = new Vector3(0, 0, 10);
+                    break;
+                }
+                case 5:{
+                    element.position = new Vector3(0, 0, 20);
+                    break;
+                }
+                default:{
+                    element.position = new Vector3(0, 0, 0);
+                    break;
+                }
+            }
+        }
+
+        public checkMonsterPosition(element, name, index): boolean{
+            if(element.position.x > this.camera.position.x + 10){
+                this.isRunningMonsters[0] = false;
+                this.hide(name);
+                this.playerLooseLife();
+                setTimeout(() => {
+                    this.respanwMonster(index);
+                }, 1000);
+                return true;
+            }
+
+            return false;
+        }
+
+        public runMonster(element, speed, animationID): void{
+            element.position.x += 0.5 * speed;
+            this.OriginalMonster.animationGroups[animationID].play(true);
+        }
+
+        public shootMonster(name : string): void{
+            switch(name.substring(name.length - 5)){
+                case "root0":{
+                    this.killMonster("root0", 0, 6, 1);
+                    break;
+                }
+                case "root1":{
+                    this.killMonster("root1", 1, 20, 15);
+                    break;
+                }
+                case "root2":{
+                    this.killMonster("root2", 2, 34, 29);
+                    break;
+                }
+                case "root3":{
+                    this.killMonster("root3", 3, 52, 43);
+                    break;
+                }
+                case "root4":{
+                    this.killMonster("root4", 4, 66, 57);
+                    break;
+                }
+                case "root5":{
+                    this.killMonster("root5", 5, 80, 71);
+                    break;
+                }
+                case "root6":{
+                    this.killMonster("root6", 6, 94, 85);
+                    break;
+                }
+                case "root7":{
+                    this.killMonster("root7", 7, 108, 99);
+                    break;
+                }
+                case "root8":{
+                    this.killMonster("root8", 8, 122, 113);
+                    break;
+                }
+                case "root9":{
+                    this.killMonster("root9", 9, 136, 127);
+                    break;
+                }
+            }
+        }
+
+        public killMonster(name, index, runAnimationID, animationID): void{
+            this.setMonsterPickableOrNot(name);
+            this.monsterDieSound.play();
+            this.OriginalMonster.animationGroups[animationID].play(false);
+            this.OriginalMonster.animationGroups[runAnimationID].stop();
+            this.isRunningMonsters[index] = false;
+            setTimeout(() => {
+                this.OriginalMonster.animationGroups[animationID].stop();
+                this.hide(name);
+                setTimeout(() => {
+                    this.respanwMonster(index);
+                }, 1000);
+            }, 2000);
+        }
+
+        public setMonsterPickableOrNot(name): void{
+            for(let x of this.OriginalMonster.meshes){
+                switch(x.name){
+                    case "skybox":{
+                        break;
+                    }
+                    case "ground":{
+                        break;
+                    }
+                    default:{
+                        if(x.name.substring(x.name.length - 5) === name)
+                        {
+                            x.isPickable = false;
+                        }
+                        break;
+                    }
+                }
+            }
+        }
+
+        public hide(name): void{
+            for(let x of this.OriginalMonster.meshes){
+                switch(x.name){
+                    case "skybox":{
+                        break;
+                    }
+                    case "ground":{
+                        break;
+                    }
+                    default:{
+                        if(x.name.substring(x.name.length - 5) === name)
+                        {
+                            if(x.name === "__root__ " + name)
+                            {
+                                x.position = new Vector3(0, -20, 0);
+                            }
+                            x.isPickable = true;
+                        }
+                        break;
+                    }
+                }
+            }
+        }
+
+        public respanwMonster(index): void{
+            this.setMonsterPosition(this.rootMonsters[index]);
+            this.isRunningMonsters[index] = true;
+        }
+
+        public playerLooseLife(): void{
+            this.playerMaxLife--;
+            this.playerLifes[this.playerMaxLife].isVisible = false;
+        }
+
+    
         /**
          * Setup physics for the given cube
          */
-        public setupPhysics(cube: Mesh): void {
+        public setupPhysics (cube: Mesh): void {
             cube.physicsImpostor = new PhysicsImpostor(cube, PhysicsImpostor.BoxImpostor, {
                 mass: 1
             });
@@ -190,7 +423,11 @@ module BABYLON {
         /**
          * Runs the engine to render the scene into the canvas
          */
-        public run() {
+        public run () {
+            this.scene.registerBeforeRender(() => {
+                this.camera.position = new Vector3(50, 10, 0);
+                this.camera.rotation.x = 0;
+            });
             this.engine.runRenderLoop(() => {
                 this.scene.render();
             });
