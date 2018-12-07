@@ -79,7 +79,7 @@ module BABYLON {
             material.diffuseTexture = myTexture;
             this.ground.material = material;
 
-
+            this.initialiseMonster();
             this.LoadMusic();
             setTimeout(() => {
                 this.ititialiseAlert();
@@ -95,8 +95,7 @@ module BABYLON {
                 Initaliser d'autre robots comme spectateurs dans la map;
             */
             this.createSkybox();
-            this.initialiseMap(); 
-            this.initialiseMonster();
+            this.initialiseMap();
             this.initialisePV();
             this.gameOver();
         }
@@ -230,7 +229,7 @@ module BABYLON {
                 console.log(this.OriginalMonster);
                 this.rootMonsters.forEach(element => {
                     this.setMonsterPosition(element);
-                })
+                });
                 this.letsRun();
             }, 5000)
         }
@@ -369,7 +368,6 @@ module BABYLON {
                 }, 1000);
                 return true;
             }
-
             return false;
         }
 

@@ -41,6 +41,7 @@ var BABYLON;
             var material = new BABYLON.StandardMaterial("groundMat", this.scene);
             material.diffuseTexture = myTexture;
             this.ground.material = material;
+            this.initialiseMonster();
             this.LoadMusic();
             setTimeout(function () {
                 _this.ititialiseAlert();
@@ -55,7 +56,6 @@ var BABYLON;
             */
             this.createSkybox();
             this.initialiseMap();
-            this.initialiseMonster();
             this.initialisePV();
             this.gameOver();
         };
