@@ -98,9 +98,14 @@ module BABYLON {
             let meshTask = assetsManager.addMeshTask("sheep", "", "./assets/", "mouton-bab.babylon");         
             this.sheepNumber++;
             meshTask.onSuccess = (task) => {
-                const sheep = task.loadedMeshes[0];
+                let sheep = task.loadedMeshes[0];
                 
-                // sheep.clone;
+                // mettre une boucle pour cloner mes mesh
+                let mesh1 = BABYLON.Mesh.CreateSphere('sphere', 8, 2, this.scene);
+                mesh1.position = new BABYLON.Vector3(15, 1, 15);
+
+                sheep = task.loadedMeshes[0].clone('sheepMultiClonage', sheep);
+                sheep.parent = mesh1;
 
                 let line = Math.floor(Math.random() * 3);
                 switch (line) {

@@ -77,6 +77,11 @@ var BABYLON;
             this.sheepNumber++;
             meshTask.onSuccess = function (task) {
                 var sheep = task.loadedMeshes[0];
+                // mettre une boucle pour cloner mes mesh
+                var mesh1 = BABYLON.Mesh.CreateSphere('sphere', 8, 2, _this.scene);
+                mesh1.position = new BABYLON.Vector3(15, 1, 15);
+                sheep = task.loadedMeshes[0].clone('sheepMultiClonage', sheep);
+                sheep.parent = mesh1;
                 var line = Math.floor(Math.random() * 3);
                 switch (line) {
                     case 0:
