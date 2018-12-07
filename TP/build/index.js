@@ -20,11 +20,22 @@ var BABYLON;
             this.camera.attachControl(this.engine.getRenderingCanvas());
             this.camera.setTarget(new BABYLON.Vector3(0, 15, 0));
             this.light = new BABYLON.PointLight('light', new BABYLON.Vector3(200, 150, 15), this.scene);
+            this.groundBase = BABYLON.Mesh.CreateGround('groundBase', 1000, 1000, 32, this.scene);
+            this.groundBase.position.y = this.groundBase.position.y - 1;
+            this.groundBase.physicsImpostor = new BABYLON.PhysicsImpostor(this.groundBase, BABYLON.PhysicsImpostor.BoxImpostor, {
+                mass: 0
+            });
+            var textureBase = new BABYLON.Texture("./assets/SiteWork.Planting.Grass.StAugustine1.jpg", this.scene);
+            textureBase.uScale = 15.0;
+            textureBase.vScale = 15.0;
+            var materialBase = new BABYLON.StandardMaterial("groundMatBase", this.scene);
+            materialBase.diffuseTexture = textureBase;
+            this.groundBase.material = materialBase;
             this.ground = BABYLON.Mesh.CreateGround('ground', 1000, 100, 32, this.scene);
             this.ground.physicsImpostor = new BABYLON.PhysicsImpostor(this.ground, BABYLON.PhysicsImpostor.BoxImpostor, {
                 mass: 0
             });
-            var myTexture = new BABYLON.Texture("./assets/SiteWork.Planting.Grass.StAugustine1.jpg", this.scene);
+            var myTexture = new BABYLON.Texture("./assets/road.jpg", this.scene);
             myTexture.uScale = 15.0;
             myTexture.vScale = 15.0;
             var material = new BABYLON.StandardMaterial("groundMat", this.scene);
@@ -108,7 +119,7 @@ var BABYLON;
                 JMBSprite.isVisible = false;
                 DGESprite.isVisible = false;
                 _this.startGame();
-            }, 0);
+            }, 20000);
         };
         Main.prototype.initialiseMap = function () {
         };
@@ -129,16 +140,15 @@ var BABYLON;
         Main.prototype.createMonster = function (index) {
             var _this = this;
             BABYLON.SceneLoader.ImportMesh("", './assets/', 'RobotExpressive.glb', this.scene, function (newMeshes) {
-                // let robotTexture = new BABYLON.Texture("./assets/bronze.jpg", this.scene);
-                // let material = new BABYLON.StandardMaterial("mat1", this.scene);
-                // material.emissiveTexture = robotTexture;
+                var material = new BABYLON.StandardMaterial("mat1", _this.scene);
+                material.emissiveColor = new BABYLON.Color3(1, 0, 0);
                 newMeshes.forEach(function (mesh) {
                     if (mesh.id === "__root__") {
                         mesh.position = new BABYLON.Vector3(0, -20, 0);
                         mesh.rotation.y = 1.5;
                     }
                     mesh.name += " root" + index;
-                    // mesh.material = material;
+                    mesh.material = material;
                     mesh.actionManager = new BABYLON.ActionManager(_this.scene);
                     mesh.actionManager.registerAction(new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnLeftPickTrigger, function () {
                         _this.shootMonster(mesh.name);

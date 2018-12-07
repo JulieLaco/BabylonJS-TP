@@ -21,6 +21,7 @@ module BABYLON {
         public light: PointLight;
 
         public ground: GroundMesh;
+        public groundBase : GroundMesh;
 
         public monsterDieSound: Sound;
         public menuSound: Sound;
@@ -53,17 +54,31 @@ module BABYLON {
 
             this.light = new PointLight('light', new Vector3(200, 150, 15), this.scene);
 
+            this.groundBase = <GroundMesh> Mesh.CreateGround('groundBase', 1000, 1000, 32, this.scene);
+            this.groundBase.position.y = this.groundBase.position.y - 1;
+            this.groundBase.physicsImpostor = new PhysicsImpostor(this.groundBase, PhysicsImpostor.BoxImpostor, {
+                mass: 0
+            });
+
+            let textureBase = new BABYLON.Texture("./assets/SiteWork.Planting.Grass.StAugustine1.jpg", this.scene);
+            textureBase.uScale = 15.0;
+            textureBase.vScale = 15.0;
+            let materialBase = new BABYLON.StandardMaterial("groundMatBase", this.scene);
+            materialBase.diffuseTexture = textureBase;
+            this.groundBase.material = materialBase;
+
             this.ground = <GroundMesh> Mesh.CreateGround('ground', 1000, 100, 32, this.scene);
             this.ground.physicsImpostor = new PhysicsImpostor(this.ground, PhysicsImpostor.BoxImpostor, {
                 mass: 0
             });
 
-            let myTexture = new BABYLON.Texture("./assets/SiteWork.Planting.Grass.StAugustine1.jpg", this.scene);
+            let myTexture = new BABYLON.Texture("./assets/road.jpg", this.scene);
             myTexture.uScale = 15.0;
             myTexture.vScale = 15.0;
             let material = new BABYLON.StandardMaterial("groundMat", this.scene);
             material.diffuseTexture = myTexture;
             this.ground.material = material;
+
 
             this.LoadMusic();
             setTimeout(() => {
@@ -157,7 +172,7 @@ module BABYLON {
                 JMBSprite.isVisible = false;
                 DGESprite.isVisible = false;
                 this.startGame();
-            }, 0)
+            }, 20000);
         }
 
         public initialiseMap(): void{
@@ -181,10 +196,9 @@ module BABYLON {
 
         public createMonster(index): void{
             BABYLON.SceneLoader.ImportMesh("", './assets/', 'RobotExpressive.glb', this.scene, (newMeshes) => {
-                // let robotTexture = new BABYLON.Texture("./assets/bronze.jpg", this.scene);
                 
-                // let material = new BABYLON.StandardMaterial("mat1", this.scene);
-                // material.emissiveTexture = robotTexture;
+                let material = new BABYLON.StandardMaterial("mat1", this.scene);
+                material.emissiveColor = new BABYLON.Color3(1, 0, 0);
 
                 newMeshes.forEach((mesh) => {
                     if(mesh.id === "__root__"){
@@ -192,7 +206,7 @@ module BABYLON {
                         mesh.rotation.y = 1.5;
                     }
                     mesh.name += " root" + index;
-                    // mesh.material = material;
+                    mesh.material = material;
                     mesh.actionManager = new ActionManager(this.scene);
                     mesh.actionManager.registerAction(new ExecuteCodeAction(
                     ActionManager.OnLeftPickTrigger, () => {

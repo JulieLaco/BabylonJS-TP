@@ -6,6 +6,7 @@ declare module BABYLON {
         camera: FreeCamera;
         light: PointLight;
         ground: GroundMesh;
+        groundBase: GroundMesh;
         monsterDieSound: Sound;
         menuSound: Sound;
         skybox: Mesh;
